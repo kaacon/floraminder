@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder - Statistika</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- GLAVNI KONTEJNER ZA POSTAVITEV -->
+    <div class="app-layout">
+        
+        <!-- MOBILNA NAVIGACIJSKA VRSTICA (Prikaže se le na mobilnih napravah) -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            
+            <!-- Trik s checkboxom za CSS-only dropdown -->
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-label">☰</label>
+            
+            <nav class="mobile-dropdown">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">🏠 Nadzorna plošča</a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">🌿 Moje rastline</a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">📅 Koledar</a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">🔔 Opomniki</a>
+                <a href="{{ url_for('statistics') }}" class="menu-item active">📊 Statistika</a>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 5px 0;">
+                <div class="user-info" style="padding: 5px 0;">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </div>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar" style="text-align: center; margin-top: 5px;">Odjava</button></form>
+            </nav>
+        </header>
+        
+        <!-- LEVI STRANSKI MENI (Sidebar - Vidno na namizju) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">
+                    <span class="icon">🏠</span> Nadzorna plošča
+                </a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">
+                    <span class="icon">🌿</span> Moje rastline
+                </a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">
+                    <span class="icon">📅</span> Koledar
+                </a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">
+                    <span class="icon">🔔</span> Opomniki
+                </a>
+                <a href="{{ url_for('statistics') }}" class="menu-item active">
+                    <span class="icon">📊</span> Statistika
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{{ url_for('profil') }}" class="user-profile-link" aria-label="Odpri moj profil">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </div>
+        </aside>
+
+        <!-- DESNI GLAVNI DEL (Main Content) -->
+        <main class="main-content">
+            
+            <!-- ZGORNJA VRSTICA -->
+            <header class="main-header">
+                <h2>Pregled vrta</h2>
+            </header>
+
+            <!-- MREŽA S STATISTIKO -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                
+                <!-- KARTICA S PROCENTI -->
+                <div style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: center;">
+                    <h4 style="color: #666; margin-bottom: 1rem;">Indeks hidracije</h4>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--primary, #28a745); margin-bottom: 1rem;">{{ stats.odstotek_hidracije }}%</div>
+                    
+                    <!-- Čist CSS Progress Bar -->
+                    <div style="background: #eee; border-radius: 10px; height: 12px; width: 100%; overflow: hidden;">
+                    <div style="--progress: {{ stats.odstotek_hidracije }}%; background: var(--primary, #28a745); height: 100%; width: var(--progress); transition: width 0.5s ease;"></div>                    </div>
+                </div>
+
+                <!-- KARTICA Z ANALITIKO -->
+                <div style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="color: #666; margin-bottom: 1.5rem;">Stanje rastlin</h4>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;">
+                        <span>🪴 Skupaj registriranih:</span>
+                        <strong>{{ stats.skupaj }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; color: #28a745;">
+                        <span>🟢 Dobro hidrirane:</span>
+                        <strong>{{ stats.zelene }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #ff4d4d;">
+                        <span>🔴 Nujna pozornost:</span>
+                        <strong>{{ stats.potrebujejo_vodo }}</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <section style="background:white; padding:2rem; border:1px solid var(--border-color); border-radius:12px; margin-top:1.5rem;">
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:baseline; margin-bottom:1rem;">
+                    <h3>💧 Zalivanja v zadnjih 30 dneh</h3>
+                    <span style="color:var(--text-muted); font-size:.9rem;">število zalitih rastlin na dan</span>
+                </div>
+                <div style="height:280px;"><canvas id="watering-chart"></canvas></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const chartElement = document.getElementById('watering-chart');
+        if (chartElement) {
+            new Chart(chartElement, {
+                type: 'bar',
+                data: {
+                    labels: {{ graf_oznake|tojson }},
+                    datasets: [{
+                        label: 'Zalitih rastlin',
+                        data: {{ graf_vrednosti|tojson }},
+                        backgroundColor: '#4caf50',
+                        borderRadius: 6,
+                        maxBarThickness: 22
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } } }
+                }
+            });
+        }
+    </script>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

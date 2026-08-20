@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body>
+
+    <!-- Navigacijska vrstica -->
+    <nav class="navbar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="navbar-logo">
+    </div>  
+    
+    <h1 class="navbar-title">Floraminder</h1>
+    
+    <div class="nav-links">
+        <a href="{{ url_for('register') }}" class="btn-login">Registracija</a>
+    </div>
+</nav>
+
+    <!-- Glavna predstavitev (Hero Section) -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Ker rastline ne znajo kričati, da so žejne.</h1>
+            <p>Evidenca rastlin, urniki zalivanja in opomniki.</p>
+            
+            <div class="login-form-container">
+                <h3>Prijava v Floraminder</h3>
+                
+                <!-- Popravljen izpis obvestil s kategorijami za pravilno barvanje -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="{% if category == 'success' %}flash-success{% else %}login-error{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form action="/login" method="POST" class="login-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="username" placeholder="Uporabniško ime" required maxlength="40" autocomplete="username">
+                    <input type="password" name="password" placeholder="Geslo" required autocomplete="current-password">
+                    <button type="submit" class="btn-primary">Vstopi v aplikacijo</button>
+                    <a href="{{ url_for('pozabljeno_geslo') }}" style="display:block; text-align:center; margin-top:1rem; color:var(--primary); font-size:.9rem;">Pozabljeno geslo?</a>
+                </form>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Kratke prednosti / Lastnosti -->
+    <section class="features">
+        <div class="feature-card">
+            <h3>🔔 Pametni opomniki</h3>
+            <p>Prejmi e-poštni ali push opomnik ob času, ki ga izbereš za vsako rastlino.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📅 Koledar nege</h3>
+            <p>Na enem mestu preveri, katere rastline so žejne danes, jutri ali že umrle od žeje.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📊 Dnevnik in statistika</h3>
+            <p>Beleži zalivanje in nego ter spremljaj zgodovino in graf zalivanja.</p>
+        </div>
+    </section>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Izberemo vsa obvestila
+        const alerts = document.querySelectorAll('.login-error, .flash-success, .flash-badge');
+        
+        alerts.forEach(function(alert) {
+            // Po 4 sekundah (4000 ms) sprožimo zbledenje
+            setTimeout(function() {
+                alert.style.transition = "opacity 0.5s ease, transform 0.5s ease, margin-bottom 0.5s ease, padding 0.5s ease, height 0.5s ease";
+                alert.style.opacity = "0";
+                alert.style.transform = "translateY(-10px)";
+                
+                // Ko se animacija zbledenja zaključi, element popolnoma odstranimo iz postavitve
+                setTimeout(function() {
+                    alert.style.display = "none";
+                }, 500); 
+            }, 4000); // Tukaj lahko spremeniš čas (4000 = 4 sekunde)
+        });
+    });
+</script>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moj profil – Floraminder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=profile-center-3">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder" class="sidebar-logo"><span class="brand-name">Floraminder</span></div>
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">🏠 Nadzorna plošča</a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">🌿 Moje rastline</a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">📅 Koledar</a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">🔔 Opomniki</a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">📊 Statistika</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('profil') }}" class="user-profile-link" aria-label="Odpri moj profil">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik.username }}</span>
+                </a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </div>
+        </aside>
+        <main class="main-content profile-main-content">
+            <header class="main-header profile-page-content"><h2>Moj profil</h2></header>
+            <div class="profile-page-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash-alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+            <section class="card-modern" style="background:#fff; padding:2rem; border:1px solid var(--border-color); border-radius:12px;">
+                <form method="POST" class="login-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label class="form-label">Uporabniško ime</label>
+                    <input type="text" value="{{ uporabnik.username }}" disabled>
+                    <label class="form-label">E-poštni naslov</label>
+                    <input type="email" name="email" value="{{ uporabnik.email or '' }}" required maxlength="254" autocomplete="email">
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:1.25rem 0;">
+                    <h3 style="margin-bottom:.75rem;">Spremeni geslo <small style="font-weight:400; color:var(--text-muted)">(neobvezno)</small></h3>
+                    <input type="password" name="current_password" placeholder="Trenutno geslo" maxlength="128" autocomplete="current-password">
+                    <input type="password" name="new_password" placeholder="Novo geslo (vsaj 8 znakov)" minlength="8" maxlength="128" autocomplete="new-password">
+                    <input type="password" name="confirm_password" placeholder="Ponovi novo geslo" minlength="8" maxlength="128" autocomplete="new-password">
+                    <button type="submit" class="btn-primary">Shrani profil</button>
+                </form>
+            </section>
+            </div>
+        </main>
+    </div>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

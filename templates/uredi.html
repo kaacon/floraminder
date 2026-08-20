@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <title>Uredi rastlino</title>
+</head>
+<body>
+    <h1>Uredi rastlino: {{ rastlina.ime }}</h1>
+    
+    <form action="{{ url_for('uredi_rastlino', plant_id=rastlina.id) }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="ime">Ime rastline:</label><br>
+        <input type="text" id="ime" name="ime" value="{{ rastlina.ime }}" required maxlength="80"><br><br>
+
+        <label for="vrsta">Vrsta:</label><br>
+        <input type="text" id="vrsta" name="vrsta" value="{{ rastlina.vrsta }}" required maxlength="100"><br><br>
+
+        <label for="interval">Interval zalivanja (v dneh):</label><br>
+        <input type="number" id="interval" name="interval" value="{{ rastlina.interval }}" min="1" max="3650" required><br><br>
+
+        <label for="zadnje_zalivanje">Datum zadnjega zalivanja:</label><br>
+        <input type="date" id="zadnje_zalivanje" name="zadnje_zalivanje" value="{{ rastlina.zadnje_zalivanje }}" required><br><br>
+
+        <button type="submit">Shrani spremembe</button>
+        <a href="{{ url_for('nadzorna_plosca') }}">Prekliči</a>
+    </form>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder - {{ rastlina.ime }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .timeline-wrapper {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+        .timeline-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        .badge-pravocasno {
+            background: #e6f6ec;
+            color: #28a745;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-zamuda {
+            background: #ffebe9;
+            color: #ff4d4d;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-nevtralno {
+            background: #eef1f4;
+            color: #666;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-predvideno {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .plant-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .plant-header-info h2 {
+            margin: 0;
+        }
+        .plant-meta {
+            color: #666;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+
+        <!-- MOBILNA VRSTICA -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-label">☰</label>
+            <nav class="mobile-dropdown">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">🏠 Nadzorna plošča</a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item active">🌿 Moje rastline</a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">📅 Koledar</a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">🔔 Opomniki</a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">📊 Statistika</a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </nav>
+        </header>
+
+        <!-- LEVI STRANSKI MENI -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">
+                    <span class="icon">🏠</span> Nadzorna plošča
+                </a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item active">
+                    <span class="icon">🌿</span> Moje rastline
+                </a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">
+                    <span class="icon">📅</span> Koledar
+                </a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">
+                    <span class="icon">🔔</span> Opomniki
+                </a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">
+                    <span class="icon">📊</span> Statistika
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('profil') }}" class="user-profile-link" aria-label="Odpri moj profil">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </div>
+        </aside>
+
+        <!-- VSEBINA -->
+        <main class="main-content">
+            <header class="main-header">
+                <a href="{{ url_for('my_plants') }}" style="text-decoration:none; color:#2e7d32; font-weight:600;">← Nazaj na moje rastline</a>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="timeline-wrapper">
+                <div class="plant-header-info">
+                    <h2>🌿 {{ rastlina.ime }}</h2>
+                    <span class="plant-meta">{{ rastlina.vrsta }} · zalivanje vsakih {{ rastlina.interval }} dni</span>
+                </div>
+                {% if rastlina.opis %}
+                    <p style="margin-top: 12px; color: #555; line-height: 1.5;">{{ rastlina.opis }}</p>
+                {% endif %}
+            </div>
+
+            <div class="timeline-wrapper">
+                <h3 style="margin-bottom: 1rem;">💧 Prihodnji predvideni datumi</h3>
+                {% if not projekcija %}
+                    <p style="color:#888;">Ni dovolj podatkov za projekcijo.</p>
+                {% else %}
+                    <ul class="timeline-list">
+                        {% for datum in projekcija %}
+                        <li class="timeline-item">
+                            <span>{{ datum }}</span>
+                            <span class="badge-predvideno">Predvideno</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="timeline-wrapper">
+                <h3 style="margin-bottom: 1rem;">📜 Zgodovina zalivanja</h3>
+                {% if not zgodovina %}
+                    <p style="color:#888;">Za to rastlino še ni zabeleženih zalivanj.</p>
+                {% else %}
+                    <ul class="timeline-list">
+                        {% for zapis in zgodovina %}
+                        <li class="timeline-item">
+                            <span>{{ zapis.datum }}</span>
+                            <span class="badge-{{ zapis.razred }}">{{ zapis.status }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="timeline-wrapper">
+                <h3 style="margin-bottom: 1rem;">🪴 Dnevnik nege</h3>
+                <form action="{{ url_for('dodaj_nego', plant_id=rastlina.id) }}" method="POST" class="care-log-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="care_type" required>
+                        <option value="gnojenje">🌱 Gnojenje</option>
+                        <option value="presajanje">🪴 Presajanje</option>
+                        <option value="obrezovanje">✂️ Obrezovanje</option>
+                        <option value="pregled">🔎 Pregled</option>
+                        <option value="skodljivci">🐛 Škodljivci</option>
+                    </select>
+                    <input type="date" name="performed_at" value="{{ danes }}" required>
+                    <input type="text" name="note" maxlength="500" placeholder="Opomba (neobvezno)">
+                    <button type="submit" class="btn-care-add">Dodaj</button>
+                </form>
+                {% if nega_zapisi %}
+                    <ul class="timeline-list">
+                    {% for zapis in nega_zapisi %}
+                        <li class="timeline-item"><span>{{ zapis.performed_at }} · <strong>{{ zapis.care_type|replace('skodljivci', 'škodljivci') }}</strong>{% if zapis.note %} — {{ zapis.note }}{% endif %}</span></li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="color:#888;">Dnevnik nege je še prazen.</p>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

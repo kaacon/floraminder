@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj Rastlino - Floraminder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+</head>
+<body>
+
+    <!-- Navigacija usklajena z vstopno stranjo -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="navbar-logo">
+        </div>  
+        <h1 class="navbar-title">Floraminder</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('nadzorna_plosca') }}" class="btn-login">Nazaj</a>
+        </div>
+    </nav>
+
+    <!-- Glavni vsebnik -->
+    <div class="auth-container">
+        <div class="form-card-container">
+            <h3>Nova rastlina 🌿</h3>
+            
+            <form action="/dodaj" method="POST" class="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!-- Vnos imena -->
+                <input type="text" name="ime" placeholder="Nickname rastline (npr. Fiki, Monstika...)" required maxlength="80">
+                
+                <!-- Vnos vrste -->
+                <input type="text" name="vrsta" placeholder="Vrsta rastline (npr. Fikus, Monstera...)" required maxlength="100">
+                
+                <!-- Interval zalivanja -->
+                <input type="number" name="interval" placeholder="Interval zalivanja (v dneh)" min="1" max="3650" required>
+                
+                <!-- Zadnje zalivanje (z novimi čistimi razredi) -->
+                <div class="date-group">
+                    <label for="zadnje_zalivanje" class="form-label">Kdaj je bila nazadnje zalita?</label>
+                    <input type="date" id="zadnje_zalivanje" name="zadnje_zalivanje" required>
+                </div>
+
+                <!-- Opis (opcijsko) -->
+                <div class="date-group">
+                    <label for="opis" class="form-label">Opis (neobvezno)</label>
+                    <textarea id="opis" name="opis" rows="3" maxlength="1000" placeholder="Npr. kje stoji, posebnosti pri negi, od koga si jo dobila ..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+                
+                <!-- Gumb za shranjevanje -->
+                <button type="submit" class="btn-primary">Shrani rastlino</button>
+            </form>
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

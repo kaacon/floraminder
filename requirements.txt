@@ -1,0 +1,7 @@
+Flask
+Flask-WTF
+Flask-Limiter
+python-dotenv
+setuptools
+apscheduler
+pywebpush

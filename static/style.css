@@ -1,0 +1,1368 @@
+/* ==========================================================================
+   FLORAMINDER - CELOTEN MODEREN SKANDINAVSKI SAAS STIL (2026)
+   Vsebuje: Globalne nastavitve, Pristajalno stran (Index), 
+   Avtentikacijo (Register/Login), Obrazce (Dodaj) in Nadzorno ploščo
+   ========================================================================== */
+
+/* Uvoz moderne, elegantne pisave */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    /* Barvna paleta navdahnjena z naravo */
+    --primary: #2E7D32;       /* Gozdno zelena */
+    --primary-hover: #1B5E20;
+    --primary-light: #E8F5E9; /* Zelo nežno zelena za gumbke */
+    --accent: #F5F5DC;        /* Topel bež ton */
+    --bg-main: #F8F9FA;       /* Lahkotno sivo/belo SaaS ozadje */
+    --bg-card: #FFFFFF;       /* Čiste bele kartice z globino */
+    --sidebar-bg: #FFFFFF;
+    
+    /* Sistemske barve za statuse */
+    --success: #4CAF50;       /* Fine / Healthy */
+    --warning: #FF9800;       /* Soon */
+    --danger: #EF5350;        /* Needs Water / Errors */
+    
+    /* Tekst in kontrasti */
+    --text-main: #1C2B1E;     /* Mehka temna barva namesto čiste črne */
+    --text-muted: #788879;    /* Umirjen tekst za podnapise */
+    --border-color: #EFEFEA;  /* Super nežne linije */
+    
+    /* Oblikovni detajli */
+    --radius: 16px;           /* Moderni zaobljeni robovi */
+    --radius-sm: 8px;
+    --shadow: 0 4px 18px rgba(0, 0, 0, 0.02), 0 1px 3px rgba(0, 0, 0, 0.02);
+    --transition: all 0.2s ease-in-out;
+}
+
+/* --- 1. OSNOVNE NASTAVITVE --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Temni način: preklopnik doda razred na <body> in izbiro shrani v brskalnik. */
+body.dark-mode {
+    --bg-main: #171a18;
+    --bg-card: #232725;
+    --sidebar-bg: #1d211f;
+    --primary: #73a77b;
+    --primary-hover: #8fc298;
+    --primary-light: #2e3d32;
+    --text-main: #f0f3f0;
+    --text-muted: #b9c1bb;
+    --border-color: #404841;
+    --shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+body.dark-mode .sidebar,
+body.dark-mode .mobile-header,
+body.dark-mode .auth-box,
+body.dark-mode .notification-settings,
+body.dark-mode .login-form-container,
+body.dark-mode .feature-card,
+body.dark-mode .widget-box,
+body.dark-mode .timeline-wrapper,
+body.dark-mode .koledar-wrapper,
+body.dark-mode .reminder-card,
+body.dark-mode .modal-card,
+body.dark-mode .modal-content,
+body.dark-mode .upcoming-events-card,
+body.dark-mode .day-detail-panel,
+body.dark-mode .plant-card-modern,
+body.dark-mode .card-modern,
+body.dark-mode [style*="background: white"],
+body.dark-mode [style*="background:white"],
+body.dark-mode [style*="background: #ffffff"],
+body.dark-mode [style*="background:#ffffff"],
+body.dark-mode [style*="background: #fff"],
+body.dark-mode [style*="background:#fff"],
+body.dark-mode [style*="background: #fafafa"],
+body.dark-mode [style*="background:#fafafa"] {
+    background: var(--bg-card) !important;
+    color: var(--text-main);
+}
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select,
+body.dark-mode .custom-select,
+body.dark-mode .care-log-form input,
+body.dark-mode .care-log-form select {
+    background: #243228 !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+
+body.dark-mode [style*="color: #666"],
+body.dark-mode [style*="color:#666"],
+body.dark-mode [style*="color: #555"],
+body.dark-mode [style*="color:#555"],
+body.dark-mode [style*="color: #888"],
+body.dark-mode [style*="color:#888"] { color: var(--text-muted) !important; }
+
+body.dark-mode .menu-item:hover { background-color: #26372a; }
+body.dark-mode .menu-item.active { background-color: #294332; }
+body.dark-mode .user-avatar { background: #3a4b3d; }
+body.dark-mode .btn-login { background: var(--bg-card); }
+body.dark-mode .calendar-table th,
+body.dark-mode .calendar-table td,
+body.dark-mode .koledar-grid-table th,
+body.dark-mode .koledar-grid-table td { border-color: var(--border-color); }
+body.dark-mode .event-item,
+body.dark-mode .timeline-item,
+body.dark-mode #day-notes-list li { border-color: var(--border-color); }
+body.dark-mode .btn-action-icon { background: #313a33; color: var(--text-main); }
+body.dark-mode .btn-action-icon:hover { background: #3c4940; }
+body.dark-mode .btn-cancel { background: #3b433d; color: var(--text-main); }
+body.dark-mode .channel-checkbox { background: #313a33; color: var(--text-main); }
+body.dark-mode .notification-settings h3,
+body.dark-mode .notification-settings .checkbox-container { color: var(--text-main); }
+body.dark-mode .day-detail-panel { border-left-color: var(--primary); }
+
+.theme-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 2000;
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--bg-card);
+    color: var(--text-main);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0;
+    display: block;
+    line-height: 1;
+}
+
+.theme-toggle .theme-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+    transform: translate(-50%, -48%);
+}
+
+.theme-toggle:hover { transform: translateY(-2px); }
+
+
+.profile-main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-page-content {
+    width: min(100%, 620px);
+}
+
+.reminder-global-settings,
+.notification-channels-card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.reminder-global-settings { background: #f1f8f2; border-color: #c8e6c9; }
+
+body.dark-mode .reminder-global-settings,
+body.dark-mode .notification-channels-card {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+a {
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+/* --- 2. PRISTAJALNA STRAN (INDEX.HTML - POPOLNOMA CENTRIRANO) --- */
+
+/* Navigacijska vrstica - Centriran logotip in naslov */
+.navbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem 1rem 2rem;
+    background-color: transparent;
+    position: relative;
+    z-index: 100;
+    gap: 12px;
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-logo {
+    height: 150px; /* Večji opazen logotip */
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.navbar-title {
+    font-size: 58px; /* Večji, odebeljen naslov */
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -1px;
+    margin: 0;
+    text-align: center;
+}
+
+/* Gumb za registracijo/prijavo desno zgoraj */
+.nav-links {
+    position: absolute;
+    right: 2rem;
+    top: 2rem;
+}
+
+.btn-login {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: var(--bg-card);
+}
+
+.btn-login:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+/* Hero Sekcija - Vse se poravna navpično na sredino */
+.hero {
+    padding: 2rem 2rem 4rem 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 2.5rem;
+}
+
+.hero-content {
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+
+/* Prijavni obrazec na sredini pod tekstom */
+.login-form-container {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(46, 125, 50, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--border-color);
+    max-width: 440px;
+    width: 100%;
+    text-align: left;
+    margin-top: 1rem;
+}
+
+.login-form-container h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"],
+.login-form input[type="email"] {
+    width: 100%;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: #F9FAF9;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    transition: var(--transition);
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.login-form .btn-primary {
+    width: 100%;
+    padding: 0.95rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.login-form .btn-primary:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+}
+
+/* Kartice prednosti (Features) */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto 6rem;
+    padding: 0 2rem;
+}
+
+.feature-card {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.06);
+}
+
+.feature-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* --- 3. STRANI ZA AVTENTIKACIJO (REGISTER.HTML / LOGIN.HTML) --- */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: var(--bg-main);
+}
+
+.auth-box {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(46, 125, 50, 0.06), 0 1px 3px rgba(0, 0, 0, 0.01);
+    border: 1px solid var(--border-color);
+    max-width: 480px;
+    width: 100%;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-logo {
+    height: 110px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 1rem;
+}
+
+.logo-container h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.logo-container p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: #F9FAF9;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    transition: var(--transition);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+/* Nastavitve obveščanja (Checkboxes) */
+.notification-settings {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: #F9FAF9;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.notification-settings h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-main);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    user-select: none;
+}
+
+.checkbox-container input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.auth-box .btn-primary {
+    width: 100%;
+    padding: 0.95rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.auth-box .btn-primary:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* --- 4. OBRAZCI ZA UPRAVLJANJE Z RASTLINAMI (DODAJ.HTML) --- */
+.form-card-container {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(46, 125, 50, 0.06), 0 1px 3px rgba(0, 0, 0, 0.01);
+    border: 1px solid var(--border-color);
+    max-width: 480px;
+    width: 100%;
+    /* POPRAVEK: Zmanjšali smo zgornji odmik iz 4rem/2rem na 1rem */
+    margin: 1rem auto auto; 
+}
+
+.form-card-container h3 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.login-form input[type="number"],
+.login-form input[type="date"] {
+    width: 100%;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: #F9FAF9;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    transition: var(--transition);
+}
+
+.login-form input[type="number"]:focus,
+.login-form input[type="date"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.form-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: block;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.date-group {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* --- 5. DASHBOARD / APLIKACIJA (DVOSTEBRNI SAAS SISTEM) --- */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Levi stranski meni (Sidebar) */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    position: fixed;
+    height: 100vh;
+    z-index: 10;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2.5rem;
+    padding-left: 0.5rem;
+}
+
+.sidebar-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.brand-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-radius: var(--radius-sm);
+}
+
+.menu-item:hover {
+    background-color: #F5F7F5;
+    color: var(--text-main);
+}
+
+.menu-item.active {
+    background-color: #EBF3EC;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Spodnji del sidebarda */
+.sidebar-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 0.5rem;
+}
+
+.user-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+}
+
+.user-profile-link:hover {
+    background: var(--primary-light);
+}
+
+.theme-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .25rem .5rem;
+    color: var(--text-main);
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.theme-switch-row input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-slider {
+    position: relative;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 22px;
+    border-radius: 999px;
+    background: #b8c2b9;
+    transition: background .2s ease;
+}
+
+.theme-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    transition: transform .2s ease;
+}
+
+.theme-switch-row input:checked + .theme-slider { background: var(--primary); }
+.theme-switch-row input:checked + .theme-slider::after { transform: translateX(18px); }
+.theme-switch-row input:focus-visible + .theme-slider { outline: 3px solid rgba(115, 167, 123, .45); outline-offset: 2px; }
+
+.care-log-form {
+    display: grid;
+    grid-template-columns: 1fr 150px;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+}
+
+.care-log-form select,
+.care-log-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #F9FAF9;
+    font: inherit;
+}
+
+.btn-care-add {
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--primary);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px 18px;
+    transition: var(--transition);
+}
+
+.btn-care-add:hover { background: var(--primary-hover); }
+
+@media (max-width: 600px) {
+    .care-log-form { grid-template-columns: 1fr; }
+}
+
+.user-avatar {
+    font-size: 1.2rem;
+    background: #EAEAE4;
+    padding: 6px;
+    border-radius: 50%;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.btn-logout-sidebar {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #C62828;
+    padding: 0.6rem;
+    background: #FFEBEE;
+    border-radius: var(--radius-sm);
+}
+
+.btn-logout-sidebar:hover {
+    background: #FFCDD2;
+}
+
+/* Glavni del z vsebino (na desni strani) */
+.main-content {
+    flex-grow: 1;
+    margin-left: 260px;
+    padding: 2rem 3rem;
+    max-width: 1400px;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-search input {
+    width: 280px;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: #FFFFFF;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-add-new {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.btn-add-new:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+}
+
+.dashboard-header {
+    margin-bottom: 2rem;
+}
+
+.dashboard-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.dashboard-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Zgornje statistične kartice na nadzorni plošči */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-top: 2px;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    background-color: #F4F6F4;
+    padding: 10px;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon.warning {
+    background-color: #FFF3E0;
+}
+
+.section-title-bar {
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.section-title-bar h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* --- 6. MREŽA ZA RASTLINE & KARTICE --- */
+.plant-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.plant-card-modern {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+}
+
+.plant-card-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.card-image-placeholder {
+    height: 160px;
+    background-color: #F5F6F3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.plant-emoji {
+    font-size: 3.5rem;
+    opacity: 0.8;
+}
+
+/* Statusni znački (Badges) */
+.badge-status-modern {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.badge-status-modern.urgent {
+    background-color: #FFEBEE;
+    color: #D32F2F;
+}
+
+.badge-status-modern.fine {
+    background-color: #E8F5E9;
+    color: #388E3C;
+}
+
+/* Gumb za brisanje (X) v zgornjem desnem kotu */
+.delete-form-modern {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.btn-delete-x {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    color: var(--text-muted);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.btn-delete-x:hover {
+    background: #FFEBEE;
+    color: #D32F2F;
+}
+
+.card-details {
+    padding: 1.25rem;
+    flex-grow: 1;
+}
+
+.card-details h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 2px;
+}
+
+.sub-species {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+/* Podatkovne vrstice znotraj kartice */
+.horizontal-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 0.75rem;
+}
+
+.h-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.h-stat .lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.h-stat .val {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-top: 1px;
+}
+
+.card-footer-action {
+    padding: 0 1.25rem 1.25rem;
+}
+
+.btn-water-modern {
+    width: 100%;
+    padding: 0.65rem;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-water-modern:hover:not(:disabled) {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-water-modern.completed {
+    background-color: #F4F4F2;
+    color: #A0AFA1;
+    cursor: not-allowed;
+}
+
+/* Stanje, ko ni dodanih rastlin (Empty state) */
+.empty-state-modern {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px dashed var(--border-color);
+}
+
+.empty-state-modern p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+/* --- 7. NAPAKE IN SISTEMSKA OBVESTILA (FLASH POROČILA) --- */
+.login-error, .flash-success, .flash-error, .flash-badge {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+    border-left: 4px solid transparent;
+    /* Priprava na JS animacijo zbledenja */
+    transition: opacity 0.4s ease, transform 0.4s ease, margin 0.4s ease, padding 0.4s ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.login-error, .flash-error {
+    background-color: #FFEBEE;
+    color: #C62828;
+    border-left-color: var(--danger);
+}
+
+.flash-success {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border-left-color: var(--success);
+}
+
+/* --- 8. RESPONSIVNOST & MOBILNI DROPDOWN (POSODOBLJENO) --- */
+
+/* Elementi za mobilno navigacijo, ki so na namizju skriti */
+.mobile-header {
+    display: none;
+    background-color: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Skriti checkbox trik za odpiranje menija brez JS */
+#menu-toggle {
+    display: none;
+}
+
+.menu-toggle-label {
+    font-size: 1.75rem;
+    cursor: pointer;
+    user-select: none;
+    padding: 5px;
+    color: var(--primary);
+}
+
+.mobile-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Ko je skriti checkbox označen, prikaži padajoči meni */
+#menu-toggle:checked ~ .mobile-dropdown {
+    display: flex;
+}
+
+/* Osnovni stil za vsa obvestila */
+.flash-alert {
+    padding: 10px; 
+    margin-bottom: 10px; 
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+/* Stil specifično za uspeh (zeleno) */
+.alert-success {
+    background-color: #e6f6ec;
+    color: #28a745;
+    border: 1px solid #d4edda;
+}
+
+/* Stil specifično za napake/opozorila (rdeče) */
+.alert-error, .alert-danger {
+    background-color: #ffebe9;
+    color: #ff4d4d;
+    border: 1px solid #f8d7da;
+}
+
+/* Prilagoditve za tablice in mobilne naprave */
+@media (max-width: 992px) {
+    .app-layout {
+        flex-direction: column; /* Postavitev gre navpično */
+    }
+
+    .sidebar {
+        display: none; /* Popolnoma skrijemo klasični sidebar */
+    }
+
+    .mobile-header {
+        display: flex; /* Prikažemo mobilno vrstico */
+    }
+
+    .main-content {
+        margin-left: 0; /* Odstranimo zamik za sidebar */
+        padding: 1.5rem;
+    }
+}
+
+/* Prilagoditve za ozke mobilne telefone */
+@media (max-width: 576px) {
+    .main-header {
+        flex-direction: column-reverse; /* Obrnemo vrstni red, da je gumb zgoraj */
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .header-search input {
+        width: 100%;
+    }
+
+    .btn-add-new {
+        text-align: center;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .header-actions .btn-add-new,
+    .header-actions button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .stats-overview {
+        grid-template-columns: 1fr; /* Statistika gre ena pod drugo */
+    }
+}
+
+/* Ostale obstoječe prilagoditve za index/auth strani */
+@media (max-width: 768px) {
+    .nav-links {
+        position: relative;
+        right: auto;
+        top: auto;
+        margin-top: 0.5rem;
+    }
+    .navbar-logo { height: 80px; }
+    .navbar-title { font-size: 2rem; }
+    .hero h1 { font-size: 2rem; }
+    .login-form-container, .auth-box, .form-card-container { padding: 2rem; }
+}
+
+.logout-form { margin: 0; }
+.logout-form .btn-logout-sidebar {
+    width: 100%;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.reminder-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .75rem; }
+.btn-reminder-secondary {
+    border: 1px solid var(--border-color); border-radius: 8px; padding: .55rem .75rem;
+    background: var(--card-bg); color: var(--text-color); cursor: pointer; font: inherit;
+}
+.btn-reminder-secondary:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.notification-history-list { list-style: none; margin: 0; padding: 0; }
+.notification-history-list li { padding: .45rem 0; border-bottom: 1px solid var(--border-color); font-size: .9rem; }
+.notification-history-list li:last-child { border-bottom: 0; }
+.muted-text { margin: 0; color: var(--text-muted); font-size: .9rem; }
+
+/* Postavljeno na koncu datoteke, da preglasi stare stile posameznih strani. */
+.main-content.profile-main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-content.profile-main-content > .profile-page-content {
+    display: block;
+    width: 620px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.main-content.profile-main-content > .main-header.profile-page-content {
+    width: 620px;
+    max-width: 100%;
+    align-self: center;
+}
+
+/* Profil centriramo znotraj prostora desno od fiksnega stranskega menija. */
+@media (min-width: 993px) {
+    .main-content.profile-main-content {
+        flex: none;
+        width: calc(100vw - 260px);
+        max-width: none;
+        margin-left: 260px;
+    }
+}
+
+body.dark-mode .reminder-global-settings,
+body.dark-mode .notification-channels-card {
+    background-color: #232725 !important;
+    background-image: none !important;
+    color: #f0f3f0 !important;
+    border-color: #404841 !important;
+}
+
+/* Opomniki imajo nekaj lastnih (svetlih) barv v predlogi, zato jih v
+   temnem načinu vedno vežemo na skupne kontrastne barve. */
+body.dark-mode .reminder-title,
+body.dark-mode .reminder-card .form-section label,
+body.dark-mode .reminder-card .channel-checkbox,
+body.dark-mode .reminder-card .custom-select {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .reminder-date,
+body.dark-mode .reminder-card .form-section > label,
+body.dark-mode .reminder-global-settings [style*="color: #526152"],
+body.dark-mode .notification-channels-card [style*="color: #666"] {
+    color: var(--text-muted) !important;
+}
+
+body.dark-mode .reminder-card .custom-select,
+body.dark-mode .reminder-card .channel-checkbox {
+    background-color: #243228 !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Kartice in običajna besedila ostanejo berljivi tudi, kadar imajo strani
+   starejše lokalno določene barve. */
+body.dark-mode .card-modern h1,
+body.dark-mode .card-modern h2,
+body.dark-mode .card-modern h3,
+body.dark-mode .plant-card-modern h1,
+body.dark-mode .plant-card-modern h2,
+body.dark-mode .plant-card-modern h3,
+body.dark-mode .timeline-wrapper h1,
+body.dark-mode .timeline-wrapper h2,
+body.dark-mode .timeline-wrapper h3 {
+    color: var(--text-main) !important;
+}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Novo geslo – Floraminder{% endblock %}
+{% block content %}
+    <main class="auth-container">
+        <section class="auth-box">
+            <div class="logo-container"><h1>🌿 Floraminder</h1></div>
+            <h2>Izberi novo geslo</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash-alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+            <form method="POST" class="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="password" name="password" placeholder="Novo geslo (vsaj 8 znakov)" required minlength="8" maxlength="128" autocomplete="new-password">
+                <input type="password" name="confirm_password" placeholder="Ponovi novo geslo" required minlength="8" maxlength="128" autocomplete="new-password">
+                <button class="btn-primary" type="submit">Shrani novo geslo</button>
+            </form>
+        </section>
+    </main>
+{% endblock %}

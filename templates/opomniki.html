@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder - Opomniki</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=dark-mode-3">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+        .reminders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .reminder-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-top: 4px solid #2e7d32;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .reminder-card.urgent {
+            border-top-color: #e74c3c;
+        }
+
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .reminder-title {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #2d3436;
+        }
+
+        .reminder-date {
+            font-size: 0.85rem;
+            color: #636e72;
+            margin-top: 4px;
+        }
+
+        .form-section {
+            margin-top: 12px;
+        }
+
+        .form-section label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #636e72;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .custom-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #2d3436;
+            background-color: #f8f9fa;
+            outline: none;
+        }
+
+        .custom-select:focus {
+            border-color: #2e7d32;
+        }
+
+        .channels-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .channel-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #2d3436;
+            cursor: pointer;
+            background: #f1f2f6;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .channel-checkbox:hover {
+            background: #e4e7eb;
+        }
+
+        .channel-checkbox input {
+            accent-color: #2e7d32;
+            cursor: pointer;
+        }
+
+        .btn-save-reminder {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-save-reminder:hover {
+            background-color: #1b5e20;
+        }
+        .all-reminders-form {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(130px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+        @media (max-width: 760px) {
+            .all-reminders-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        
+        <!-- MOBILNA NAVIGACIJA -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-label">☰</label>
+            
+            <nav class="mobile-dropdown">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">🏠 Nadzorna plošča</a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">🌿 Moje rastline</a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">📅 Koledar</a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item active">🔔 Opomniki</a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">📊 Statistika</a>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 5px 0;">
+                <div class="user-info" style="padding: 5px 0;">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </div>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar" style="text-align: center; margin-top: 5px;">Odjava</button></form>
+            </nav>
+        </header>
+        
+        <!-- LEVI STRANSKI MENI -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">
+                    <span class="icon">🏠</span> Nadzorna plošča
+                </a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">
+                    <span class="icon">🌿</span> Moje rastline
+                </a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">
+                    <span class="icon">📅</span> Koledar
+                </a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item active">
+                    <span class="icon">🔔</span> Opomniki
+                </a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">
+                    <span class="icon">📊</span> Statistika
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{{ url_for('profil') }}" class="user-profile-link" aria-label="Odpri moj profil">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </div>
+        </aside>
+
+        <!-- GLAVNI DEL -->
+        <main class="main-content">
+            
+            <!-- ISKALNIK IN AKCIJE -->
+            <header class="main-header">
+                <div class="header-search">
+                    <input type="text" placeholder="Išči opomnik..." id="reminder-search">
+                </div>
+            </header>
+
+            <!-- FLASH SPOROČILA -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-container">
+                  {% for category, message in messages %}
+                    <div class="flash-badge {{ category }}">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="section-header-flex">
+                <h2>Nastavitve opomnikov</h2>
+            </div>
+
+            <div class="reminder-global-settings">
+                <h3 style="margin:0 0 .4rem;">🌿 Nastavi za vse rastline</h3>
+                <p style="font-size:.9rem; color:#526152; margin-bottom:1rem;">Te nastavitve prepišejo obstoječe opomnike pri vseh tvojih rastlinah.</p>
+                <form action="{{ url_for('shrani_vse_opomnike') }}" method="POST" class="all-reminders-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-section" style="margin:0;"><label for="vsi-cas">Kdaj obvesti</label><select name="cas_opomnika" id="vsi-cas" class="custom-select"><option value="ob_casu">Ob izbranem času</option><option value="15_min">15 minut prej</option><option value="1_ura">1 uro prej</option><option value="1_dan" selected>1 dan prej</option><option value="1_teden">1 teden prej</option></select></div>
+                    <div class="form-section" style="margin:0;"><label for="vsi-ura">Ura</label><input type="time" name="reminder_time" id="vsi-ura" value="09:00" class="custom-select"></div>
+                    <div class="form-section" style="margin:0;"><label>Kanali</label><div class="channels-group"><label class="channel-checkbox"><input type="checkbox" name="kanali" value="push"> Push</label><label class="channel-checkbox"><input type="checkbox" name="kanali" value="email"> E-pošta</label><label class="channel-checkbox"><input type="checkbox" name="repeat_overdue" value="1" checked> Ponavljaj</label></div></div>
+                    <button type="submit" class="btn-save-reminder" style="margin:0;">Shrani za vse</button>
+                </form>
+            </div>
+
+            <!-- SPLOŠNI KANALI OBVEŠČANJA -->
+            <div class="notification-channels-card">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem;">Kanali obveščanja</h3>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                    <div>
+                        <strong>✉️ E-pošta</strong>
+                        <div style="font-size: 0.85rem; color: #666;">
+                            {% if email_obvescanje_vklopljeno %}Trenutno vklopljeno - prejemaš opomnike na email.{% else %}Trenutno izklopljeno - opomnikov ne prejemaš na email.{% endif %}
+                        </div>
+                    </div>
+                    <form action="{{ url_for('preklopi_email_obvescanje') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="vklopljeno" value="{{ '0' if email_obvescanje_vklopljeno else '1' }}">
+                        <button type="submit" class="btn-save-reminder" style="width: auto; margin: 0; padding: 8px 16px;">
+                            {% if email_obvescanje_vklopljeno %}Izklopi{% else %}Vklopi{% endif %}
+                        </button>
+                    </form>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                    <div>
+                        <strong>📲 Push (ta naprava)</strong>
+                        <div style="font-size: 0.85rem; color: #666;">
+                            {% if ima_push_narocnino %}Trenutno vklopljeno na tej napravi.{% else %}Ni še omogočeno na tej napravi.{% endif %}
+                        </div>
+                    </div>
+                    {% if ima_push_narocnino %}
+                    <form action="{{ url_for('preklici_push') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-save-reminder" style="width: auto; margin: 0; padding: 8px 16px;">Prekliči</button>
+                    </form>
+                    {% else %}
+                    <button type="button" id="btn-omogoci-push" class="btn-save-reminder" style="width: auto; margin: 0; padding: 8px 16px;">🔔 Omogoči</button>
+                    {% endif %}
+                </div>
+                <p style="font-size:.85rem; color:#666; margin-top:12px;">Opomnik se pošlje ob izbranem datumu in uri, ne ob shranjevanju nastavitev. Preveri delovanje s testom:</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+                    <a href="{{ url_for('test_email') }}" class="btn-save-reminder" style="width:auto; margin:0; padding:8px 14px;">✉️ Test e-pošte</a>
+                    <a href="{{ url_for('test_push') }}" class="btn-save-reminder" style="width:auto; margin:0; padding:8px 14px;">📲 Test pusha</a>
+                </div>
+            </div>
+
+            <div class="notification-channels-card reminder-history-card">
+                <h3 style="margin:0 0 .5rem; font-size:1rem;">Zadnja poslana obvestila</h3>
+                {% if zgodovina_obvestil %}
+                    <ul class="notification-history-list">
+                    {% for zapis in zgodovina_obvestil %}
+                        <li><strong>{{ zapis.name }}</strong> · {{ 'E-pošta' if zapis.channel == 'email' else 'Push' }} · {{ zapis.created_at }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="muted-text">Še ni poslanih obvestil. Testna obvestila niso del te zgodovine.</p>
+                {% endif %}
+            </div>
+
+            <!-- SEZNAM KARTIC Z OPOMNIKI -->
+            <div class="reminders-grid" id="reminders-grid">
+                {% if not opomniki_seznam %}
+                    <div class="empty-state-modern" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                        <h3>Ni aktivnih opomnikov ali dogodkov.</h3>
+                        <p>Dodajte nove rastline ali opravila na nadzorni plošči.</p>
+                    </div>
+                {% endif %}
+
+                {% for item in opomniki_seznam %}
+                    <div class="reminder-card {% if item.nujno %}urgent{% endif %}">
+                        <form action="{{ url_for('shrani_opomnik', plant_id=item.plant_id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <div class="reminder-header">
+                                <div>
+                                    <h3 class="reminder-title">🌿 {{ item.naziv }}</h3>
+                                    <div class="reminder-date">📅 {{ item.datum_opravila }}</div>
+                                    <div class="reminder-date">🔔 Naslednji opomnik: {{ item.naslednji_opomnik }}</div>
+                                    {% if item.prelozeno_do %}<div class="reminder-date">⏸ Preloženo do {{ item.prelozeno_do }}</div>{% endif %}
+                                </div>
+                                {% if item.nujno %}
+                                    <span class="badge-status-modern urgent">Nujno</span>
+                                {% else %}
+                                    <span class="badge-status-modern info">Planirano</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- KDAJ OBVESTI -->
+                            <div class="form-section">
+                                <label for="cas_{{ loop.index }}">Kdaj obvesti:</label>
+                                <select name="cas_opomnika" id="cas_{{ loop.index }}" class="custom-select">
+                                    <option value="ob_casu" {% if item.cas == 'ob_casu' %}selected{% endif %}>Ob izbranem času</option>
+                                    <option value="15_min" {% if item.cas == '15_min' %}selected{% endif %}>15 minut prej</option>
+                                    <option value="1_ura" {% if item.cas == '1_ura' %}selected{% endif %}>1 uro prej</option>
+                                    <option value="1_dan" {% if item.cas == '1_dan' %}selected{% endif %}>1 dan prej</option>
+                                    <option value="1_teden" {% if item.cas == '1_teden' %}selected{% endif %}>1 teden prej</option>
+                                </select>
+                            </div>
+
+                            <div class="form-section">
+                                <label for="ura_{{ loop.index }}">Ura obvestila:</label>
+                                <input type="time" name="reminder_time" id="ura_{{ loop.index }}" value="{{ item.ura }}" class="custom-select">
+                            </div>
+
+                            <!-- KAM OBVESTI -->
+                            <div class="form-section">
+                                <label>Kam obvesti:</label>
+                                <div class="channels-group">
+                                    <label class="channel-checkbox">
+                                        <input type="checkbox" name="kanali" value="push" {% if 'push' in item.kanali %}checked{% endif %}>
+                                        📲 Push
+                                    </label>
+                                    <label class="channel-checkbox">
+                                        <input type="checkbox" name="kanali" value="email" {% if 'email' in item.kanali %}checked{% endif %}>
+                                        ✉️ E-pošta
+                                    </label>
+                                </div>
+                            </div>
+
+                            <label class="channel-checkbox" style="margin-top:12px;">
+                                <input type="checkbox" name="repeat_overdue" value="1" {% if item.ponavljaj_zamudo %}checked{% endif %}>
+                                🔁 Ponavljaj vsak dan, dokler ne zalijem
+                            </label>
+
+                            <button type="submit" class="btn-save-reminder">Shrani nastavitve</button>
+                            <div class="reminder-actions">
+                                <button type="submit" formaction="{{ url_for('zalij_rastlino') }}" name="plant_id" value="{{ item.plant_id }}" class="btn-reminder-secondary">💧 Označi kot zalito</button>
+                                <button type="submit" formaction="{{ url_for('prelozi_opomnik', plant_id=item.plant_id) }}" class="btn-reminder-secondary">Preloži na jutri</button>
+                            </div>
+
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Iskalnik med opomniki
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('reminder-search');
+            const grid = document.getElementById('reminders-grid');
+
+            if (searchInput && grid) {
+                searchInput.addEventListener('input', function(e) {
+                    const term = e.target.value.toLowerCase().trim();
+                    const cards = grid.querySelectorAll('.reminder-card');
+
+                    cards.forEach(function(card) {
+                        const title = card.querySelector('.reminder-title').textContent.toLowerCase();
+                        if (title.includes(term)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='push-notifications.js') }}"></script>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

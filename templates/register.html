@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder - Registracija</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=dark-mode-3">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <!-- Logotip -->
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="auth-logo">
+                <h1>Floraminder</h1>
+                <p>Ustvari svoj račun za nego rastlin</p>
+            </div>
+
+            <!-- Izpis napak s podporo za kategorije obvestil -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="{% if category == 'success' %}flash-success{% else %}flash-error{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Obrazec za registracijo -->
+            <form action="{{ url_for('register') }}" method="POST" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="username">Uporabniško ime</label>
+                    <input type="text" id="username" name="username" placeholder="Vnesi uporabniško ime" required maxlength="40" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-poštni naslov</label>
+                    <input type="email" id="email" name="email" placeholder="primer@email.com" required maxlength="254" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Geslo</label>
+                    <input type="password" id="password" name="password" placeholder="Ustvari geslo" required minlength="8" maxlength="128" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Potrdi geslo</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Ponovno vpiši geslo" required minlength="8" maxlength="128" autocomplete="new-password">
+                </div>
+
+                <!-- Nastavitve obveščanja -->
+                <div class="notification-settings">
+                    <h3>Nastavitve obveščanja:</h3>
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="notify_email" checked>
+                        <span>Želim prejemati opomnike na e-naslov</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-primary">Registriraj se</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Že imaš račun? <a href="{{ url_for('domov') }}">Prijavi se tukaj</a></p>
+            </div>
+        </div>
+    </div>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Pozabljeno geslo – Floraminder{% endblock %}
+{% block content %}
+    <main class="auth-container">
+        <section class="auth-box">
+            <div class="logo-container"><h1>🌿 Floraminder</h1></div>
+            <h2>Ponastavi geslo</h2>
+            <p style="margin: .75rem 0 1.5rem; color: var(--text-muted);">Vnesi e-poštni naslov svojega računa. Poslali ti bomo povezavo, veljavno eno uro.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash-alert alert-{{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+            <form method="POST" class="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="email" name="email" placeholder="E-poštni naslov" required maxlength="254" autocomplete="email">
+                <button class="btn-primary" type="submit">Pošlji povezavo</button>
+            </form>
+            <p style="text-align:center; margin-top:1.25rem;"><a href="{{ url_for('domov') }}">Nazaj na prijavo</a></p>
+        </section>
+    </main>
+{% endblock %}

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder - Koledar</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .koledar-wrapper {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+        .koledar-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+        .koledar-header-flex span {
+            font-weight: 600;
+            color: #2e7d32;
+            font-size: 1.1rem;
+        }
+        .koledar-grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        .koledar-grid-table th {
+            padding: 10px;
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+        }
+        .koledar-grid-table td {
+            padding: 0;
+            height: 70px;
+            width: 14.28%;
+            vertical-align: top;
+            border: 1px solid #f0f0f0;
+            position: relative;
+        }
+        .koledar-grid-table td.klikljiv {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .koledar-grid-table td.klikljiv:hover {
+            background-color: #f1f8f2;
+        }
+        .koledar-grid-table td.izbran-dan {
+            outline: 2px solid #2e7d32;
+            outline-offset: -2px;
+            background-color: #f1f8f2;
+        }
+        .dan-stevilka {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+        }
+        .koledar-grid-table td.danes .dan-stevilka {
+            background-color: #2e7d32;
+            color: white;
+            border-radius: 50%;
+        }
+        .dan-pika {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #3498db;
+        }
+        .dan-pika-zapisek {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #f39c12;
+        }
+        .oznake-dneva {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .day-detail-panel {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #2e7d32;
+            font-size: 0.9rem;
+            min-height: 24px;
+        }
+        .day-detail-panel ul {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+        }
+        .day-detail-panel .day-detail-title {
+            font-weight: 600;
+            color: #2d3436;
+        }
+        .zapiski-sekcija {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        .zapiski-sekcija h4 {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem;
+            color: #2d3436;
+        }
+        #day-notes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+        }
+        #day-notes-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.88rem;
+        }
+        #day-notes-list button.izbrisi-zapisek {
+            background: none;
+            border: none;
+            color: #ff4d4d;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0 4px;
+        }
+        .dodaj-zapisek-vrstica {
+            display: flex;
+            gap: 8px;
+        }
+        .dodaj-zapisek-vrstica input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        .dodaj-zapisek-vrstica button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .dodaj-zapisek-vrstica button:hover {
+            background: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        
+        <!-- MOBILNA NAVIGACIJSKA VRSTICA -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-label">☰</label>
+            
+            <nav class="mobile-dropdown">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">🏠 Nadzorna plošča</a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">🌿 Moje rastline</a>
+                <a href="{{ url_for('calendar') }}" class="menu-item active">📅 Koledar</a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">🔔 Opomniki</a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">📊 Statistika</a>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 5px 0;">
+                <div class="user-info" style="padding: 5px 0;">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </div>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar" style="text-align: center; margin-top: 5px;">Odjava</button></form>
+            </nav>
+        </header>
+
+        <!-- LEVI STRANSKI MENI (Sidebar za namizne zaslone) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">
+                    <span class="icon">🏠</span> Nadzorna plošča
+                </a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item">
+                    <span class="icon">🌿</span> Moje rastline
+                </a>
+                <a href="{{ url_for('calendar') }}" class="menu-item active">
+                    <span class="icon">📅</span> Koledar
+                </a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">
+                    <span class="icon">🔔</span> Opomniki
+                </a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">
+                    <span class="icon">📊</span> Statistika
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('profil') }}" class="user-profile-link" aria-label="Odpri moj profil">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </div>
+        </aside>
+
+        <!-- DESNI GLAVNI DEL (Main Content) -->
+        <main class="main-content">
+            <header class="main-header">
+                <h2>Urnik zalivanja</h2>
+            </header>
+
+            <div class="koledar-wrapper">
+                <div class="koledar-header-flex">
+                    <a class="btn-preglej" href="{{ url_for('calendar', year=prejsnji.year, month=prejsnji.month) }}" aria-label="Prejšnji mesec">←</a>
+                    <h3 style="margin: 0;">📅 {{ koledar.ime_meseca }} {{ koledar.leto }}</h3>
+                    <a class="btn-preglej" href="{{ url_for('calendar', year=naslednji.year, month=naslednji.month) }}" aria-label="Naslednji mesec">→</a>
+                </div>
+                {% if not je_trenutni_mesec %}<p style="text-align:center; margin-bottom:.75rem;"><a href="{{ url_for('calendar') }}">Nazaj na današnji mesec</a></p>{% endif %}
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+                    <span style="color:#3498db;">●</span> zalivanje &nbsp; <span style="color:#f39c12;">●</span> zapisek &nbsp;·&nbsp; klikni na dan za podrobnosti
+                </p>
+                <table class="koledar-grid-table" id="koledar-tabela" data-mesec="{{ koledar.ime_meseca }}" data-leto="{{ koledar.leto }}">
+                    <thead>
+                        <tr>
+                            <th>Pon</th><th>Tor</th><th>Sre</th><th>Čet</th><th>Pet</th><th>Sob</th><th>Ned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for teden in koledar.tedni %}
+                        <tr>
+                            {% for dan in teden %}
+                                {% if dan.day %}
+                                    <td class="klikljiv {% if dan.is_today %}danes{% endif %}"
+                                        data-day="{{ dan.day }}"
+                                        data-full-date="{{ '%04d-%02d-%02d' % (koledar.leto, koledar.mesec_st, dan.day) }}"
+                                        data-events="{{ dan.events|join('|') }}">
+                                        <span class="dan-stevilka">{{ dan.day }}</span>
+                                        <span class="oznake-dneva">
+                                            {% if dan.has_event %}<span class="dan-pika"></span>{% endif %}
+                                            {% if dan.has_note %}<span class="dan-pika-zapisek"></span>{% endif %}
+                                        </span>
+                                    </td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="day-detail-panel" id="day-detail-panel">
+                    <div id="day-detail-header"><span style="color:#888;">Klikni na dan v koledarju, da vidiš, katere rastline so tisti dan na vrsti, in dodaš svoj zapisek.</span></div>
+                    <div id="day-events-list"></div>
+                    <div class="zapiski-sekcija" id="day-notes-section" style="display:none;">
+                        <h4>📝 Zapiski</h4>
+                        <ul id="day-notes-list"></ul>
+                        <div class="dodaj-zapisek-vrstica">
+                            <input type="text" id="nov-zapisek-input" placeholder="Dodaj zapisek za ta dan ..." maxlength="500">
+                            <button type="button" id="btn-dodaj-zapisek">Dodaj</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 1rem;">
+                <h3 style="margin-bottom: 1.5rem;">Prihajajoči dogodki</h3>
+                
+                {% if not urnik %}
+                    <p>Ni načrtovanih opravil. Dodaj rastlino, da se ustvari urnik.</p>
+                {% else %}
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        {% for dogodek in urnik %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: #fafafa;">
+                            <div>
+                                <strong style="font-size: 1.1rem; color: var(--text-color);">💦 Zalij {{ dogodek.name }}</strong>
+                                <div style="color: #666; font-size: 0.9rem; margin-top: 4px;">Predviden datum: {{ dogodek.datum }}</div>
+                            </div>
+                            <div>
+                                {% if dogodek.razlika < 0 %}
+                                    <span style="background: #ff4d4d; color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">{{ dogodek.status }}</span>
+                                {% elif dogodek.razlika == 0 %}
+                                    <span style="background: #ff9800; color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">{{ dogodek.status }}</span>
+                                {% else %}
+                                    <span style="background: #28a745; color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">{{ dogodek.status }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabela = document.getElementById('koledar-tabela');
+            if (!tabela) return;
+
+            const mesec = tabela.getAttribute('data-mesec');
+            const leto = tabela.getAttribute('data-leto');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            const glavaEl = document.getElementById('day-detail-header');
+            const dogodkiEl = document.getElementById('day-events-list');
+            const zapiskiSekcija = document.getElementById('day-notes-section');
+            const zapiskiSeznam = document.getElementById('day-notes-list');
+            const vnosZapisek = document.getElementById('nov-zapisek-input');
+            const btnDodajZapisek = document.getElementById('btn-dodaj-zapisek');
+
+            let izbranDatum = null; // format YYYY-MM-DD, uporabljen za API klice
+
+            function prikaziZapiske(zapiski) {
+                zapiskiSeznam.innerHTML = '';
+                if (!zapiski || zapiski.length === 0) {
+                    zapiskiSeznam.innerHTML = '<li style="color:#888; border-bottom:none;">Ni zapiskov za ta dan.</li>';
+                    return;
+                }
+                zapiski.forEach(function (z) {
+                    const li = document.createElement('li');
+
+                    const span = document.createElement('span');
+                    span.textContent = '📝 ' + z.text;
+
+                    const btnIzbrisi = document.createElement('button');
+                    btnIzbrisi.type = 'button';
+                    btnIzbrisi.className = 'izbrisi-zapisek';
+                    btnIzbrisi.textContent = '✕';
+                    btnIzbrisi.title = 'Izbriši zapisek';
+                    btnIzbrisi.addEventListener('click', function () {
+                        fetch('/api/dnevni-zapiski/' + z.id, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRFToken': csrfToken }
+                        })
+                            .then(function (r) { return r.json(); })
+                            .then(function () { nalozizapiske(izbranDatum); });
+                    });
+
+                    li.appendChild(span);
+                    li.appendChild(btnIzbrisi);
+                    zapiskiSeznam.appendChild(li);
+                });
+            }
+
+            function nalozizapiske(datum) {
+                fetch('/api/dnevni-zapiski/' + datum)
+                    .then(function (r) { return r.json(); })
+                    .then(function (podatki) {
+                        prikaziZapiske(podatki.notes || []);
+                        posodobiOznakoDneva(datum, (podatki.notes || []).length);
+                    })
+                    .catch(function () { zapiskiSeznam.innerHTML = '<li style="color:#ff4d4d; border-bottom:none;">Napaka pri nalaganju zapiskov.</li>'; });
+            }
+
+            function posodobiOznakoDneva(datum, steviloZapiskov) {
+                const celica = tabela.querySelector('td[data-full-date="' + datum + '"]');
+                if (!celica) return;
+
+                let oznakeWrapper = celica.querySelector('.oznake-dneva');
+                let oznaka = celica.querySelector('.dan-pika-zapisek');
+
+                if (steviloZapiskov > 0) {
+                    if (!oznaka) {
+                        if (!oznakeWrapper) {
+                            oznakeWrapper = document.createElement('span');
+                            oznakeWrapper.className = 'oznake-dneva';
+                            celica.appendChild(oznakeWrapper);
+                        }
+                        oznaka = document.createElement('span');
+                        oznaka.className = 'dan-pika-zapisek';
+                        oznakeWrapper.appendChild(oznaka);
+                    }
+                } else if (oznaka) {
+                    oznaka.remove();
+                }
+            }
+
+            function dodajZapisek() {
+                const besedilo = vnosZapisek.value.trim();
+                if (!besedilo || !izbranDatum) return;
+
+                fetch('/api/dnevni-zapiski', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ datum: izbranDatum, text: besedilo })
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (podatki) {
+                        vnosZapisek.value = '';
+                        prikaziZapiske(podatki.notes || []);
+                        posodobiOznakoDneva(izbranDatum, (podatki.notes || []).length);
+                    });
+            }
+
+            btnDodajZapisek.addEventListener('click', dodajZapisek);
+            vnosZapisek.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    dodajZapisek();
+                }
+            });
+
+            tabela.querySelectorAll('td.klikljiv').forEach(function (celica) {
+                celica.addEventListener('click', function () {
+                    tabela.querySelectorAll('td.izbran-dan').forEach(function (t) {
+                        t.classList.remove('izbran-dan');
+                    });
+                    celica.classList.add('izbran-dan');
+
+                    const dan = celica.getAttribute('data-day');
+                    const dogodkiRaw = celica.getAttribute('data-events') || '';
+                    const dogodki = dogodkiRaw.split('|').filter(function (x) { return x.trim() !== ''; });
+
+                    glavaEl.innerHTML = '<span class="day-detail-title">' + dan + '. ' + mesec + ' ' + leto + '</span>';
+
+                    if (dogodki.length === 0) {
+                        dogodkiEl.innerHTML = '<div style="color:#888; margin-top:4px;">Ni predvidenega zalivanja ta dan.</div>';
+                    } else {
+                        let vsebina = '<ul style="margin: 6px 0 0 0; padding-left: 20px;">';
+                        dogodki.forEach(function (ime) {
+                            vsebina += '<li>💧 ' + ime + '</li>';
+                        });
+                        vsebina += '</ul>';
+                        dogodkiEl.innerHTML = vsebina;
+                    }
+
+                    izbranDatum = celica.getAttribute('data-full-date');
+                    zapiskiSekcija.style.display = 'block';
+                    zapiskiSeznam.innerHTML = '<li style="color:#888; border-bottom:none;">Nalagam ...</li>';
+                    vnosZapisek.value = '';
+                    nalozizapiske(izbranDatum);
+                });
+            });
+        });
+    </script>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

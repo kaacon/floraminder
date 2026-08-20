@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraminder - Moje rastline</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Enostavni stili za modalno okno (Edit Modal) */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #444;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .btn-cancel {
+            background: #eee;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-save {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Novi stili za postavitev logotipa */
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-logo {
+            height: 32px; /* Prilagodi višino logotipa po želji */
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Množično zalivanje */
+        .bulk-action-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 1rem;
+        }
+        .bulk-action-bar.aktivna {
+            display: flex;
+        }
+        .bulk-action-bar .stevilo-izbranih {
+            font-weight: 600;
+            color: #2e7d32;
+        }
+        .btn-bulk-water {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-bulk-water:hover {
+            background: #1b5e20;
+        }
+        .rastlina-checkbox, #izberi-vse {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- MOBILNA VRSTICA -->
+        <header class="mobile-header">
+            <div class="mobile-brand">
+                <div class="brand-wrapper">
+                    <!-- LOGO ZA MOBILNE NAPRAVE -->
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="app-logo">
+                    <span class="brand-name">Floraminder</span>
+                </div>
+            </div>
+            <input type="checkbox" id="menu-toggle">
+            <label for="menu-toggle" class="menu-toggle-label">☰</label>
+            <nav class="mobile-dropdown">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">🏠 Nadzorna plošča</a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item active">🌿 Moje rastline</a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">📅 Koledar</a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">🔔 Opomniki</a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">📊 Statistika</a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </nav>
+        </header>
+
+        <!-- LEVI STRANSKI MENI (Sidebar za namizne zaslone) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Floraminder Logo" class="sidebar-logo">
+                <span class="brand-name">Floraminder</span>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('nadzorna_plosca') }}" class="menu-item">
+                    <span class="icon">🏠</span> Nadzorna plošča
+                </a>
+                <a href="{{ url_for('my_plants') }}" class="menu-item active">
+                    <span class="icon">🌿</span> Moje rastline
+                </a>
+                <a href="{{ url_for('calendar') }}" class="menu-item">
+                    <span class="icon">📅</span> Koledar
+                </a>
+                <a href="{{ url_for('opomniki') }}" class="menu-item">
+                    <span class="icon">🔔</span> Opomniki
+                </a>
+                <a href="{{ url_for('statistics') }}" class="menu-item">
+                    <span class="icon">📊</span> Statistika
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('profil') }}" class="user-profile-link" aria-label="Odpri moj profil">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ uporabnik }}</span>
+                </a>
+                <form action="{{ url_for('logout') }}" method="POST" class="logout-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-logout-sidebar">Odjava</button></form>
+            </div>
+        </aside>
+
+        <!-- VSEBINA -->
+        <main class="main-content">
+            <header class="main-header">
+                <h2>Moje rastline</h2>
+                <a href="{{ url_for('dodaj_rastlino') }}" class="btn-add-new">+ Dodaj rastlino</a>
+            </header>
+
+            <!-- Prikaz obvestil brez CSS logike v HTML-ju -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card-modern" style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 1rem;">
+                <h3 style="margin-bottom: 1.5rem;">Zbirka ({{ rastline|length }})</h3>
+                
+                {% if not rastline %}
+                    <p>Še ni dodanih rastlin.</p>
+                {% else %}
+                    <div class="bulk-action-bar" id="bulk-action-bar">
+                        <span class="stevilo-izbranih" id="stevilo-izbranih">0 izbranih</span>
+                        <button type="button" class="btn-bulk-water" id="btn-zalij-izbrane">💧 Zalij izbrane</button>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--border-color); color: #666; font-size: 0.9rem;">
+                                    <th style="padding: 10px; width: 36px;"><input type="checkbox" id="izberi-vse" title="Izberi vse"></th>
+                                    <th style="padding: 10px;">Ime</th>
+                                    <th style="padding: 10px;">Vrsta</th>
+                                    <th style="padding: 10px;">Interval zalivanja</th>
+                                    <th style="padding: 10px;">Stanje</th>
+                                    <th style="padding: 10px; text-align: right;">Dejanja</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in rastline %}
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 15px 10px;">
+                                        <input type="checkbox" class="rastlina-checkbox" value="{{ r.id }}">
+                                    </td>
+                                    <td style="padding: 15px 10px; font-weight: 500;">
+                                        <a href="{{ url_for('podrobnosti_rastline', plant_id=r.id) }}" style="color: inherit; text-decoration: none;">
+                                            🌿 {{ r.name }}
+                                        </a>
+                                    </td>
+                                    <td style="padding: 15px 10px; color: #666;">{{ r.species }}</td>
+                                    <td style="padding: 15px 10px;">Vsakih {{ r.interval_days }} dni</td>
+                                    <td style="padding: 15px 10px;">
+                                        {% if r.days_since_watered >= r.interval_days %}
+                                            <span style="background: #ffebe9; color: #ff4d4d; padding: 4px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">Žejna</span>
+                                        {% else %}
+                                            <span style="background: #e6f6ec; color: #28a745; padding: 4px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">Zdrava</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 15px 10px; text-align: right; white-space: nowrap;">
+                                        <!-- GUMB ZA UREJANJE -->
+                                        <button type="button" 
+                                                class="btn-edit" 
+                                                data-id="{{ r.id }}"
+                                                data-name="{{ r.name }}" 
+                                                data-species="{{ r.species }}" 
+                                                data-interval="{{ r.interval_days }}"
+                                                data-date="{{ r.raw_date }}"
+                                                data-description="{{ r.description or '' }}"
+                                                style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.9rem; margin-right: 15px; font-weight: 500;">
+                                            Uredi
+                                        </button>
+
+                                        <!-- OBRAZEC ZA BRISANJE -->
+                                        <form action="/odstrani" method="POST" style="display:inline;" onsubmit="return confirm('Odstrani {{ r.name }}?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="plant_id" value="{{ r.id }}">
+                                            <button type="submit" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 0.9rem;">Izbriši</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALNO OKNO ZA UREJANJE -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; margin-bottom: 1.5rem;">Uredi podatke rastline</h3>
+            <form id="editForm" action="" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="modal-name">Ime rastline</label>
+                    <input type="text" name="ime" id="modal-name" required maxlength="80">
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-species">Vrsta</label>
+                    <input type="text" name="vrsta" id="modal-species" required maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-interval">Interval zalivanja (dni)</label>
+                    <input type="number" name="interval" id="modal-interval" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="modal-date">Datum zadnjega zalivanja</label>
+                    <input type="date" name="zadnje_zalivanje" id="modal-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="modal-opis">Opis (neobvezno)</label>
+                    <textarea name="opis" id="modal-opis" rows="3" maxlength="1000" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="btn-close-modal">Prekliči</button>
+                    <button type="submit" class="btn-save">Shrani spremembe</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ZA UPRAVLJANJE Z MODALNIM OKNOM -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        const closeModalBtn = document.getElementById('btn-close-modal');
+        const editButtons = document.querySelectorAll('.btn-edit');
+        
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const species = this.getAttribute('data-species');
+                const interval = this.getAttribute('data-interval');
+                const date = this.getAttribute('data-date');
+                const opis = this.getAttribute('data-description');
+                
+                editForm.action = "/uredi/" + encodeURIComponent(id);
+                
+                document.getElementById('modal-name').value = name;
+                document.getElementById('modal-species').value = species;
+                document.getElementById('modal-interval').value = interval;
+                document.getElementById('modal-date').value = date;
+                document.getElementById('modal-opis').value = opis || '';
+                
+                modal.style.display = 'flex';
+            });
+        });
+        
+        closeModalBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // --- MNOŽIČNO ZALIVANJE ---
+        const izberiVseCheckbox = document.getElementById('izberi-vse');
+        const rastlinaCheckboxi = document.querySelectorAll('.rastlina-checkbox');
+        const bulkBar = document.getElementById('bulk-action-bar');
+        const steviloIzbranihEl = document.getElementById('stevilo-izbranih');
+        const btnZalijIzbrane = document.getElementById('btn-zalij-izbrane');
+
+        function posodobiBulkVrstico() {
+            const izbrane = document.querySelectorAll('.rastlina-checkbox:checked');
+            if (izbrane.length > 0) {
+                bulkBar.classList.add('aktivna');
+                steviloIzbranihEl.textContent = izbrane.length + ' izbranih';
+            } else {
+                bulkBar.classList.remove('aktivna');
+            }
+            if (izberiVseCheckbox) {
+                izberiVseCheckbox.checked = izbrane.length === rastlinaCheckboxi.length && rastlinaCheckboxi.length > 0;
+            }
+        }
+
+        rastlinaCheckboxi.forEach(function (cb) {
+            cb.addEventListener('change', posodobiBulkVrstico);
+        });
+
+        if (izberiVseCheckbox) {
+            izberiVseCheckbox.addEventListener('change', function () {
+                rastlinaCheckboxi.forEach(function (cb) {
+                    cb.checked = izberiVseCheckbox.checked;
+                });
+                posodobiBulkVrstico();
+            });
+        }
+
+        if (btnZalijIzbrane) {
+            btnZalijIzbrane.addEventListener('click', function () {
+                const izbraneVrednosti = Array.from(document.querySelectorAll('.rastlina-checkbox:checked'))
+                    .map(function (cb) { return cb.value; });
+
+                if (izbraneVrednosti.length === 0) return;
+
+                const zacasnaForma = document.createElement('form');
+                zacasnaForma.method = 'POST';
+                zacasnaForma.action = '/zalij-vec';
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = '{{ csrf_token() }}';
+                zacasnaForma.appendChild(csrfInput);
+
+                izbraneVrednosti.forEach(function (id) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'plant_ids';
+                    input.value = id;
+                    zacasnaForma.appendChild(input);
+                });
+
+                document.body.appendChild(zacasnaForma);
+                zacasnaForma.submit();
+            });
+        }
+    });
+    </script>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>
